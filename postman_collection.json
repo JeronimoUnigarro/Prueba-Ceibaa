@@ -1,0 +1,309 @@
+{
+  "info": {
+    "name": "Bicycle Rental API",
+    "description": "Colección completa para probar la API de alquiler de bicicletas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "rentalId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🚲 Bicicletas",
+      "item": [
+        {
+          "name": "Listar todas las disponibles",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bikes/available",
+            "description": "RF-04: Devuelve todas las bicicletas en estado DISPONIBLE"
+          }
+        },
+        {
+          "name": "Filtrar disponibles por tipo URBANA",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/bikes/available?type=URBANA",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bikes", "available"],
+              "query": [{ "key": "type", "value": "URBANA" }]
+            },
+            "description": "RF-04: Filtra por tipo. Valores válidos: URBANA, MONTANA, ELECTRICA"
+          }
+        },
+        {
+          "name": "Filtrar disponibles por tipo MONTANA",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/bikes/available?type=MONTANA",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bikes", "available"],
+              "query": [{ "key": "type", "value": "MONTANA" }]
+            }
+          }
+        },
+        {
+          "name": "Filtrar disponibles por tipo ELECTRICA",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/bikes/available?type=ELECTRICA",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bikes", "available"],
+              "query": [{ "key": "type", "value": "ELECTRICA" }]
+            }
+          }
+        },
+        {
+          "name": "Consultar bicicleta por código",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bikes/BIC-001",
+            "description": "Busca una bicicleta por su código único"
+          }
+        },
+        {
+          "name": "Consultar bicicleta inexistente (404)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bikes/BIC-999",
+            "description": "Debe responder 404 Not Found"
+          }
+        },
+        {
+          "name": "Registrar nueva bicicleta",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/bikes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"BIC-006\",\n  \"type\": \"ELECTRICA\",\n  \"status\": \"DISPONIBLE\"\n}"
+            },
+            "description": "RF-01: Registra una nueva bicicleta. Devuelve 201 Created"
+          }
+        },
+        {
+          "name": "Registrar bicicleta duplicada (409)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/bikes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"BIC-001\",\n  \"type\": \"URBANA\",\n  \"status\": \"DISPONIBLE\"\n}"
+            },
+            "description": "Debe responder 409 Conflict porque BIC-001 ya existe"
+          }
+        },
+        {
+          "name": "Registrar bicicleta con datos inválidos (400)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/bikes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"\",\n  \"type\": null\n}"
+            },
+            "description": "Debe responder 400 Bad Request por validación"
+          }
+        },
+        {
+          "name": "Historial de alquileres de BIC-002",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bikes/BIC-002/rentals",
+            "description": "RF-05: Historial de todos los alquileres de una bicicleta"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Alquileres",
+      "item": [
+        {
+          "name": "Iniciar alquiler (BIC-001 - URBANA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('rentalId', body.id);",
+                  "    console.log('Rental ID guardado:', body.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/rentals",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bicycleCode\": \"BIC-001\",\n  \"clientName\": \"Maria Lopez\",\n  \"estimatedHours\": 2\n}"
+            },
+            "description": "RF-02: Inicia un alquiler. Guarda automáticamente el rentalId en la variable de colección"
+          }
+        },
+        {
+          "name": "Iniciar alquiler (BIC-002 - MONTANA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('rentalId', body.id);",
+                  "    console.log('Rental ID guardado:', body.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/rentals",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bicycleCode\": \"BIC-002\",\n  \"clientName\": \"Juan García\",\n  \"estimatedHours\": 3\n}"
+            }
+          }
+        },
+        {
+          "name": "Iniciar alquiler en bicicleta EN_MANTENIMIENTO (409)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/rentals",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bicycleCode\": \"BIC-004\",\n  \"clientName\": \"Pedro\",\n  \"estimatedHours\": 1\n}"
+            },
+            "description": "RN-04: BIC-004 está EN_MANTENIMIENTO. Debe responder 409 Conflict"
+          }
+        },
+        {
+          "name": "Iniciar alquiler con campos vacíos (400)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/rentals",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bicycleCode\": \"\",\n  \"clientName\": \"\",\n  \"estimatedHours\": -1\n}"
+            },
+            "description": "Debe responder 400 Bad Request"
+          }
+        },
+        {
+          "name": "Finalizar alquiler",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/rentals/{{rentalId}}/finish",
+            "description": "RF-03: Finaliza el alquiler, calcula costo y multa si aplica. Usa el rentalId guardado automáticamente"
+          }
+        },
+        {
+          "name": "Finalizar alquiler ya terminado (409)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/rentals/{{rentalId}}/finish",
+            "description": "RN-05: Intentar finalizar dos veces. Debe responder 409 Conflict"
+          }
+        },
+        {
+          "name": "Finalizar alquiler inexistente (404)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/rentals/9999/finish",
+            "description": "RN-05: Debe responder 404 Not Found"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔄 Flujo completo",
+      "item": [
+        {
+          "name": "1. Ver bicicletas disponibles",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bikes/available"
+          }
+        },
+        {
+          "name": "2. Iniciar alquiler BIC-003 (ELECTRICA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('rentalId', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/rentals",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bicycleCode\": \"BIC-003\",\n  \"clientName\": \"Ana Gomez\",\n  \"estimatedHours\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "3. Verificar que BIC-003 ya no está disponible",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bikes/BIC-003"
+          }
+        },
+        {
+          "name": "4. Finalizar alquiler",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/rentals/{{rentalId}}/finish"
+          }
+        },
+        {
+          "name": "5. Ver historial de BIC-003",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bikes/BIC-003/rentals"
+          }
+        },
+        {
+          "name": "6. Confirmar que BIC-003 volvió a DISPONIBLE",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bikes/available"
+          }
+        }
+      ]
+    }
+  ]
+}
