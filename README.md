@@ -2,6 +2,14 @@
 
 API REST para gestión de alquiler de bicicletas urbanas. Construida con Spring Boot 3.5 y Java 17.
 
+## URL pública (desplegada en AWS Elastic Beanstalk)
+
+```
+http://bicycle-rental-env.eba-fzyiegia.us-east-2.elasticbeanstalk.com
+```
+
+> El despliegue es automático con cada `git push` a `main` mediante GitHub Actions.
+
 ---
 
 ## Arquitectura
@@ -39,6 +47,8 @@ El `Clock` de Java se inyecta como bean de Spring, lo que permite reemplazarlo p
 | Utilidades | Lombok |
 | Pruebas | JUnit 5 + Mockito + AssertJ |
 | Build | Maven Wrapper (`mvnw`) |
+| Despliegue | AWS Elastic Beanstalk (Java 17 / Amazon Linux 2023) |
+| CI/CD | GitHub Actions (deploy automático en cada push a `main`) |
 
 ---
 
@@ -157,23 +167,27 @@ PUT /api/rentals/1/finish
 
 ## Ejemplos de flujo completo (curl)
 
+Reemplaza `BASE_URL` por `http://localhost:8080` en local o por la URL de AWS en producción.
+
 ```bash
+BASE_URL=http://bicycle-rental-env.eba-fzyiegia.us-east-2.elasticbeanstalk.com
+
 # 1. Ver bicicletas disponibles
-curl http://localhost:8080/api/bikes/available
+curl $BASE_URL/api/bikes/available
 
 # 2. Iniciar alquiler de BIC-002 (MONTANA)
-curl -s -X POST http://localhost:8080/api/rentals \
+curl -s -X POST $BASE_URL/api/rentals \
   -H "Content-Type: application/json" \
-  -d '{"bicycleCode":"BIC-002","clientName":"Juan García","estimatedHours":2}'
+  -d '{"bicycleCode":"BIC-002","clientName":"Juan Garcia","estimatedHours":2}'
 
 # 3. Finalizar el alquiler (usar el id devuelto en el paso 2)
-curl -X PUT http://localhost:8080/api/rentals/1/finish
+curl -X PUT $BASE_URL/api/rentals/1/finish
 
 # 4. Ver historial de BIC-002
-curl http://localhost:8080/api/bikes/BIC-002/rentals
+curl $BASE_URL/api/bikes/BIC-002/rentals
 
 # 5. Intentar alquilar una bicicleta en mantenimiento (debe fallar con 409)
-curl -s -X POST http://localhost:8080/api/rentals \
+curl -s -X POST $BASE_URL/api/rentals \
   -H "Content-Type: application/json" \
   -d '{"bicycleCode":"BIC-004","clientName":"Ana","estimatedHours":1}'
 ```

@@ -2,6 +2,7 @@ package com.ceiba.bicycle_rental.application.service;
 
 import com.ceiba.bicycle_rental.application.dto.BicycleRequest;
 import com.ceiba.bicycle_rental.application.dto.BicycleResponse;
+import com.ceiba.bicycle_rental.application.dto.UpdateBicycleStatusRequest;
 import com.ceiba.bicycle_rental.domain.enums.BicycleStatus;
 import com.ceiba.bicycle_rental.domain.enums.BicycleType;
 import com.ceiba.bicycle_rental.domain.model.Bicycle;
@@ -43,5 +44,13 @@ public class BicycleService {
         Bicycle bicycle = bicycleRepository.findByCode(code)
                 .orElseThrow(() -> new ResourceNotFoundException("Bicicleta no encontrada con codigo: " + code));
         return new BicycleResponse(bicycle);
+    }
+
+    @Transactional
+    public BicycleResponse updateStatus(String code, UpdateBicycleStatusRequest request) {
+        Bicycle bicycle = bicycleRepository.findByCode(code)
+                .orElseThrow(() -> new ResourceNotFoundException("Bicicleta no encontrada con codigo: " + code));
+        bicycle.setStatus(request.getStatus());
+        return new BicycleResponse(bicycleRepository.save(bicycle));
     }
 }

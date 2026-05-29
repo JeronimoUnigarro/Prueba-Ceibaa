@@ -3,6 +3,7 @@ package com.ceiba.bicycle_rental.api.controller;
 import com.ceiba.bicycle_rental.application.dto.BicycleRequest;
 import com.ceiba.bicycle_rental.application.dto.BicycleResponse;
 import com.ceiba.bicycle_rental.application.dto.RentalResponse;
+import com.ceiba.bicycle_rental.application.dto.UpdateBicycleStatusRequest;
 import com.ceiba.bicycle_rental.application.service.BicycleService;
 import com.ceiba.bicycle_rental.application.service.RentalService;
 import com.ceiba.bicycle_rental.domain.enums.BicycleType;
@@ -44,5 +45,11 @@ public class BicycleController {
     @GetMapping("/{code}/rentals")
     public ResponseEntity<List<RentalResponse>> getRentalHistory(@PathVariable String code) {
         return ResponseEntity.ok(rentalService.getRentalHistory(code));
+    }
+
+    @PutMapping("/{code}/status")
+    public ResponseEntity<BicycleResponse> updateStatus(@PathVariable String code,
+            @Valid @RequestBody UpdateBicycleStatusRequest request) {
+        return ResponseEntity.ok(bicycleService.updateStatus(code, request));
     }
 }
