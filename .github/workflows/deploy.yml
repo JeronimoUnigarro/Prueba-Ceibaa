@@ -19,6 +19,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Ejecutar pruebas unitarias
+        run: mvn test
+
       - name: Compilar JAR
         run: mvn clean package -DskipTests
 
