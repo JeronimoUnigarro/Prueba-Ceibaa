@@ -2,6 +2,7 @@ package com.ceiba.bicycle_rental.application.service;
 
 import com.ceiba.bicycle_rental.application.dto.BicycleRequest;
 import com.ceiba.bicycle_rental.application.dto.BicycleResponse;
+import com.ceiba.bicycle_rental.application.dto.UpdateBicycleStatusRequest;
 import com.ceiba.bicycle_rental.domain.enums.BicycleStatus;
 import com.ceiba.bicycle_rental.domain.enums.BicycleType;
 import com.ceiba.bicycle_rental.domain.model.Bicycle;
@@ -120,6 +121,79 @@ class BicycleServiceTest {
         when(bicycleRepository.findByCode("BIC-999")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> bicycleService.getByCode("BIC-999"))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("BIC-999");
+    }
+
+    // =========================================================
+    // getAll
+    // =========================================================
+
+    @Test
+    @DisplayName("getAll sin filtro retorna todas las bicicletas sin importar estado")
+    void getAll_noFilter_returnsAllBicycles() {
+        Bicycle b1 = new Bicycle("BIC-001", BicycleType.URBANA,   BicycleStatus.DISPONIBLE);
+        Bicycle b2 = new Bicycle("BIC-002", BicycleType.MONTANA,  BicycleStatus.ALQUILADA);
+        Bicycle b3 = new Bicycle("BIC-004", BicycleType.MONTANA,  BicycleStatus.EN_MANTENIMIENTO);
+
+        when(bicycleRepository.findAll()).thenReturn(List.of(b1, b2, b3));
+
+        List<BicycleResponse> result = bicycleService.getAll(null);
+
+        assertThat(result).hasSize(3);
+        assertThat(result).extracting(BicycleResponse::getStatus)
+                .containsExactlyInAnyOrder(
+                        BicycleStatus.DISPONIBLE,
+                        BicycleStatus.ALQUILADA,
+                        BicycleStatus.EN_MANTENIMIENTO);
+    }
+
+    @Test
+    @DisplayName("getAll con filtro EN_MANTENIMIENTO retorna solo las que estan en mantenimiento")
+    void getAll_withStatusFilter_returnsOnlyMatchingStatus() {
+        Bicycle b4 = new Bicycle("BIC-004", BicycleType.MONTANA, BicycleStatus.EN_MANTENIMIENTO);
+
+        when(bicycleRepository.findByStatus(BicycleStatus.EN_MANTENIMIENTO)).thenReturn(List.of(b4));
+
+        List<BicycleResponse> result = bicycleService.getAll(BicycleStatus.EN_MANTENIMIENTO);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getStatus()).isEqualTo(BicycleStatus.EN_MANTENIMIENTO);
+        assertThat(result.get(0).getCode()).isEqualTo("BIC-004");
+    }
+
+    // =========================================================
+    // updateStatus
+    // =========================================================
+
+    @Test
+    @DisplayName("updateStatus: bicicleta EN_MANTENIMIENTO pasa a DISPONIBLE correctamente")
+    void updateStatus_fromMaintenanceToAvailable_updatesSuccessfully() {
+        Bicycle bicycle = new Bicycle("BIC-004", BicycleType.MONTANA, BicycleStatus.EN_MANTENIMIENTO);
+        bicycle.setId(4L);
+
+        UpdateBicycleStatusRequest request = new UpdateBicycleStatusRequest();
+        request.setStatus(BicycleStatus.DISPONIBLE);
+
+        when(bicycleRepository.findByCode("BIC-004")).thenReturn(Optional.of(bicycle));
+        when(bicycleRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        BicycleResponse response = bicycleService.updateStatus("BIC-004", request);
+
+        assertThat(response.getStatus()).isEqualTo(BicycleStatus.DISPONIBLE);
+        assertThat(response.getCode()).isEqualTo("BIC-004");
+        verify(bicycleRepository).save(bicycle);
+    }
+
+    @Test
+    @DisplayName("updateStatus: bicicleta inexistente lanza ResourceNotFoundException")
+    void updateStatus_nonExistingCode_throwsResourceNotFoundException() {
+        UpdateBicycleStatusRequest request = new UpdateBicycleStatusRequest();
+        request.setStatus(BicycleStatus.DISPONIBLE);
+
+        when(bicycleRepository.findByCode("BIC-999")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bicycleService.updateStatus("BIC-999", request))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("BIC-999");
     }
