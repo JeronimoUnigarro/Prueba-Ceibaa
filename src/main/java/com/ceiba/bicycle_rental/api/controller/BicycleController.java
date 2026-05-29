@@ -6,6 +6,7 @@ import com.ceiba.bicycle_rental.application.dto.RentalResponse;
 import com.ceiba.bicycle_rental.application.dto.UpdateBicycleStatusRequest;
 import com.ceiba.bicycle_rental.application.service.BicycleService;
 import com.ceiba.bicycle_rental.application.service.RentalService;
+import com.ceiba.bicycle_rental.domain.enums.BicycleStatus;
 import com.ceiba.bicycle_rental.domain.enums.BicycleType;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,12 @@ public class BicycleController {
     @PostMapping
     public ResponseEntity<BicycleResponse> register(@Valid @RequestBody BicycleRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bicycleService.register(request));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<BicycleResponse>> getAll(
+            @RequestParam(required = false) BicycleStatus status) {
+        return ResponseEntity.ok(bicycleService.getAll(status));
     }
 
     @GetMapping("/available")

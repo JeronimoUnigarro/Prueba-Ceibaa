@@ -32,6 +32,14 @@ public class BicycleService {
     }
 
     @Transactional(readOnly = true)
+    public List<BicycleResponse> getAll(BicycleStatus status) {
+        List<Bicycle> bicycles = (status != null)
+                ? bicycleRepository.findByStatus(status)
+                : bicycleRepository.findAll();
+        return bicycles.stream().map(BicycleResponse::new).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<BicycleResponse> getAvailable(BicycleType type) {
         List<Bicycle> bicycles = (type != null)
                 ? bicycleRepository.findByStatusAndType(BicycleStatus.DISPONIBLE, type)
