@@ -90,7 +90,17 @@ Las 5 bicicletas del enunciado se cargan automáticamente al iniciar:
 | BIC-004 | MONTANA | EN_MANTENIMIENTO |
 | BIC-005 | URBANA | DISPONIBLE |
 
-**Consola H2** (solo desarrollo): `http://localhost:8080/h2-console`
+**Consola H2** (solo desarrollo): La consola H2 está deshabilitada por defecto. Para activarla localmente ejecuta con el perfil `dev`:
+
+```bash
+# Linux / Mac
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+
+# Windows
+mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+Luego accede a `http://localhost:8080/h2-console`
 - JDBC URL: `jdbc:h2:mem:bicycle_db`
 - Usuario: `sa` / Sin contraseña
 
@@ -104,7 +114,7 @@ Las 5 bicicletas del enunciado se cargan automáticamente al iniciar:
 mvnw.cmd test
 ```
 
-21 pruebas unitarias cubren: cálculo de costos, multas, validaciones de estado y tarifas por tipo.
+25 pruebas unitarias cubren: cálculo de costos, multas, validaciones de estado, tarifas por tipo, actualización de estado y listado de bicicletas.
 
 ---
 
@@ -225,6 +235,19 @@ Todas las respuestas de error tienen el formato:
   "timestamp": "2026-05-29T22:00:00"
 }
 ```
+
+---
+
+## Seguridad
+
+- **Consola H2 deshabilitada en producción** — solo activa con perfil `dev` en local
+- **CORS configurado explícitamente** — permite peticiones desde cualquier origen a `/api/**` con métodos GET, POST, PUT y DELETE
+- **Cabeceras HTTP de seguridad** aplicadas en cada respuesta:
+  - `X-Content-Type-Options: nosniff` — previene ataques MIME sniffing
+  - `X-Frame-Options: DENY` — previene clickjacking
+  - `Cache-Control: no-store` — evita caché de respuestas con datos
+- **Validación de entrada** en todos los endpoints con Jakarta Validation (`@Valid`, `@NotBlank`, `@NotNull`, `@Positive`)
+- **`spring.jpa.open-in-view` deshabilitado** — previene queries fuera de transacción
 
 ---
 
